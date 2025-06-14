@@ -6,7 +6,7 @@
 
     <groupId>eu.ciechanowiec</groupId>
     <artifactId>com.google.guava</artifactId>
-    <version>30.1.1-jre</version>
+    <version>33.4.8-jre</version>
 
     <name>Guava - OSGi Bundle</name>
     <description>Shaded OSGi bundle of Guava</description>
