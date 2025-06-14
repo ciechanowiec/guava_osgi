@@ -1,0 +1,37 @@
+name: 'Publish Release'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract project properties from POM
+        id: project_props
+        run: |
+          echo "version=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -DforceStdout)" >> $GITHUB_OUTPUT
+          echo "name=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.name}' --non-recursive exec:exec -DforceStdout)" >> $GITHUB_OUTPUT
+
+      - name: Create and push Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.project_props.outputs.version }}" -m "Release ${{ steps.project_props.outputs.version }}"
+          git push origin "${{ steps.project_props.outputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.project_props.outputs.version }}" \
+            --title "${{ steps.project_props.outputs.name }} // ${{ steps.project_props.outputs.version }}" \
+            --notes ""
